@@ -1,0 +1,15 @@
+Todo:
+
+sudo apt update
+sudo apt upgrade
+install ufw
+    enable and run ufw
+    enable {{port}} for tcp
+install OpenSSH
+    open the ufw ports
+    ensure sshd is enabled and running
+mkdir ~/.ssh with perms 700
+    Put authorized_keys in .ssh/ with 600 perms
+
+Put the sshd_config file in /etc/ssh/
+restart sshd after everything

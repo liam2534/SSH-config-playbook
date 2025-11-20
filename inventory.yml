@@ -1,0 +1,7 @@
+all:
+    children:
+        ssh_hosts:
+            hosts:
+                ssh_target_1:
+                    ssh_host: "{{ host }}"
+                    ssh_user: "{{ user }}"
