@@ -1,0 +1,31 @@
+---
+- name: Update & Upgrade System
+  apt:
+    update_cache: yes
+    upgrade: safe
+  become: yes
+
+- name: install ufw
+  apt:
+    name: ufw
+    state: present
+  become: yes
+
+- name: Enable and Run ufw
+  ufw:
+    state: enable
+  become: yes
+
+# sudo apt update done
+# sudo apt upgrade done
+# install ufw done
+#     enable and run ufw
+#     enable {{port}} for tcp
+# install OpenSSH
+#     open the ufw ports
+#     ensure sshd is enabled and running
+# mkdir ~/.ssh with perms 700
+#     Put authorized_keys in .ssh/ with 600 perms
+
+# Put the sshd_config file in /etc/ssh/
+# restart sshd after everything
