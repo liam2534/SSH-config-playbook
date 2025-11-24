@@ -1,0 +1,7 @@
+---
+- name: Configure SSH on inventory
+  hosts: all
+  gather_facts: yes
+
+  roles:
+    - role: deb-based
