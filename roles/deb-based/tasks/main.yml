@@ -5,9 +5,10 @@
     upgrade: safe
   become: yes
 
-- name: install ufw
+- name: install ufw and OpenSSH
   apt:
     name: ufw
+    name: openssh-server
     state: present
   become: yes
 
@@ -16,14 +17,51 @@
     state: enable
   become: yes
 
+- name: Enable tcp port for ufw
+  ufw:
+    rule: allow
+    port: "{{ port }}"
+    proto: tcp
+  become: yes
+
+- name: make .ssh directory
+  ansible.builtin.shell: |
+    mkdir -p ~/.ssh && chmod 700 ~/.ssh
+  become: yes
+
+- name: insert authorized_keys
+  ansible.builtin.copy:
+    src: ./roles/files/authorized_keys
+    dest: ~/.ssh/authorized_keys
+    mode: "0600"
+  become: yes
+
+- name: copy sshd_config
+  ansible.builtin.template:
+    src: ./roles/templates/sshd_config.j2
+    dest: /etc/ssh/sshd_config
+  become: yes
+
+- name: Enable and Run sshd
+  service:
+    name: sshd
+    state: enable
+  become: yes
+
+- name: restart sshd
+  ansible.builtin.service:
+    name: sshd
+    state: restarted
+
+
 # sudo apt update done
 # sudo apt upgrade done
-# install ufw done
+# install ufw done 
 #     enable and run ufw
 #     enable {{port}} for tcp
-# install OpenSSH
-#     open the ufw ports
-#     ensure sshd is enabled and running
+# install OpenSSH done
+#     open the ufw ports done
+#     ensure sshd is enabled and running done
 # mkdir ~/.ssh with perms 700
 #     Put authorized_keys in .ssh/ with 600 perms
 
