@@ -1,23 +1,35 @@
 ---
 - name: Update & Upgrade System
-  apt:
-    update_cache: yes
-    upgrade: safe
+  ansible.builtin.package:
+    state: latest
   become: yes
 
-- name: install ufw and OpenSSH
-  apt:
-    name: 
-      - ufw
+- name: install OpenSSH 
+  ansible.builtin.package:
+    name:
       - openssh-server
     state: present
   become: yes
 
+- name: install ufw
+  ansible.builtin.package:
+    name: ufw
+    state: present
+  become: yes
+  when: ansible_os_family == "Debian"
+
+- name: install firewalld
+  ansible.builtin.package:
+    name: firewalld
+    state: present
+  become: yes
+  when: ansible_os_family == "RedHat"
+
 - name: Enable and Run ufw
   ufw:
-    state: started
-    enabled: yes
+    state: enabled
   become: yes
+  when: ansible_os_family == "Debian"
 
 - name: Enable tcp port for ufw
   ufw:
@@ -25,36 +37,47 @@
     port: "{{ port }}"
     proto: tcp
   become: yes
+  when: ansible_os_family == "Debian"
+
+- name: Enable tcp port for firewall-cmd
+  ansible.posix.firewalld:
+    port: "{{ port }}/tcp"
+    permanent: true
+    state: enabled
+    immediate: true
+  become: yes
+  when: ansible_os_family == "RedHat"
 
 - name: make .ssh directory
-  ansible.builtin.shell: |
-    mkdir -p ~/.ssh && chmod 700 ~/.ssh
+  ansible.builtin.file:
+    path: "/home/{{ user }}/.ssh"
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: "0700"
   become: yes
 
 - name: insert authorized_keys
   ansible.builtin.copy:
-    src: ../files/authorized_keys
-    dest: ~/.ssh/authorized_keys
+    src: ./files/authorized_keys
+    dest: "/home/{{ user }}/.ssh/authorized_keys"
+    owner: "{{ user }}"
+    group: "{{ user }}"
     mode: "0600"
   become: yes
 
 - name: copy sshd_config
   ansible.builtin.template:
-    src: ../templates/sshd_config.j2
+    src: ./templates/sshd_config.j2
     dest: /etc/ssh/sshd_config
-  become: yes
+  notify: Restart ssh
 
-- name: Enable and Run sshd
-  service:
-    name: ssh
+- name: Enable and start sshd
+  ansible.builtin.service:
+    name: "{{ 'ssh' if ansible_os_family == 'Debian' else 'sshd' }}"
     state: started
     enabled: yes
   become: yes
-
-- name: restart sshd
-  ansible.builtin.service:
-    name: sshd
-    state: restarted
 
 
 # sudo apt update done
