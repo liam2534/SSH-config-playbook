@@ -2,4 +2,7 @@
 - name: Configure SSH on inventory
   hosts: all
   gather_facts: yes
+  become: yes
+  roles:
+    - ssh
  

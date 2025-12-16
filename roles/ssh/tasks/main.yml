@@ -71,6 +71,7 @@
     src: ./templates/sshd_config.j2
     dest: /etc/ssh/sshd_config
   notify: Restart ssh
+  become: yes
 
 - name: Enable and start sshd
   ansible.builtin.service:
